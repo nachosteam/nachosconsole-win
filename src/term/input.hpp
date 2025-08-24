@@ -3,11 +3,12 @@
 #include <vector>
 #include <string>
 #include <conio.h>
-#include <filesystem>
 
 std::string readInputWithHistory(const std::string& prompt, std::vector<std::string>& history, int& historyIndex) {
     std::string buffer;
     size_t cursorPos = 0;
+    size_t prevLength = 0;
+
     std::cout << prompt << std::flush;
 
     while (true) {
@@ -25,9 +26,6 @@ std::string readInputWithHistory(const std::string& prompt, std::vector<std::str
             if (cursorPos > 0) {
                 buffer.erase(cursorPos - 1, 1);
                 cursorPos--;
-                std::cout << "\r" << prompt << buffer << " \b";
-                for (size_t i = buffer.size(); i > cursorPos; i--) std::cout << "\b";
-                std::cout << std::flush;
             }
         }
         else if (ch == 0 || ch == 224) {
@@ -37,7 +35,6 @@ std::string readInputWithHistory(const std::string& prompt, std::vector<std::str
                     historyIndex--;
                     buffer = history[historyIndex];
                     cursorPos = buffer.size();
-                    std::cout << "\r" << std::string(200, ' ') << "\r" << prompt << buffer << std::flush;
                 }
             }
             else if (code == 80) {
@@ -49,20 +46,12 @@ std::string readInputWithHistory(const std::string& prompt, std::vector<std::str
                     buffer.clear();
                 }
                 cursorPos = buffer.size();
-                std::cout << "\r" << std::string(200, ' ') << "\r" << prompt << buffer << std::flush;
             }
             else if (code == 75) {
-                if (cursorPos > 0) {
-                    cursorPos--;
-                    std::cout << "\b" << std::flush;
-                }
+                if (cursorPos > 0) cursorPos--;
             }
             else if (code == 77) {
-                if (cursorPos < buffer.size()) {
-                    std::cout << buffer[cursorPos];
-                    cursorPos++;
-                    std::cout << std::flush;
-                }
+                if (cursorPos < buffer.size()) cursorPos++;
             }
         }
         else if (ch == 9) {
@@ -70,9 +59,17 @@ std::string readInputWithHistory(const std::string& prompt, std::vector<std::str
         }
         else {
             buffer.insert(cursorPos, 1, (char)ch);
-            std::cout << buffer.substr(cursorPos) << std::flush;
             cursorPos++;
-            for (size_t i = buffer.size(); i > cursorPos; i--) std::cout << "\b";
         }
+
+        std::cout << "\r" << prompt;
+        std::cout << buffer;
+        size_t clearLen = prevLength > buffer.size() ? prevLength - buffer.size() : 0;
+        if (clearLen > 0) std::cout << std::string(clearLen, ' ');
+        prevLength = buffer.size();
+
+        std::cout << "\r" << prompt;
+        for (size_t i = 0; i < cursorPos; i++) std::cout << buffer[i];
+        std::cout << std::flush;
     }
 }

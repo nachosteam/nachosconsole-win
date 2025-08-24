@@ -32,6 +32,7 @@
 #include "logout.hpp"
 #include "pkgman/getArch.hpp"
 #include "pkgman/update.hpp"
+#include "pkgman/list.hpp"
 #include "pkgman/install.hpp"
 #include "pkgman/remove.hpp"
 #include "pkgman/startPkg.hpp"
@@ -89,6 +90,9 @@ int main(int argc, char *argv[]) {
 				std::string package;
 				iss >> package;
 				remove(package);
+			}
+			else if (parameter == "-l") {
+    			listPackages();
 			}
 			else if (parameter == "-u")
 				update();

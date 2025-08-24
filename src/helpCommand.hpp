@@ -12,8 +12,8 @@ void help(const std::string& place) {
             "rmuser               Deletes a user (root access required)" << std::endl <<
             "passwd               Changes the password of the current user" << std::endl <<
             "clear                Clears the terminal window" << std::endl <<
-            "ls [dir or file]     Shows files in the directory or a specific file (beta)" << std::endl <<
-            "cat <file>           Shows contents of the file (beta)" << std::endl <<
+            "ls [dir or file]     Shows files in the directory or a specific file" << std::endl <<
+            "cat <file>           Shows contents of the file" << std::endl <<
             "logout               Logs out of the account" << std::endl <<
             "exit                 Stops running NachosConsole" << std::endl;
     } 
@@ -21,6 +21,7 @@ void help(const std::string& place) {
         std::cout <<
             "-i <pkg>   Install package" << std::endl <<
             "-r <pkg>   Remove package" << std::endl <<
+            "-l         Show available packages" << std::endl <<
             "-u         Update available packages list" << std::endl;
     }
 }
