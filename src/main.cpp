@@ -29,14 +29,12 @@
 #include "about.hpp"
 #include "ls.hpp"
 #include "cat.hpp"
+#include "logout.hpp"
 #include "pkgman/getArch.hpp"
 #include "pkgman/update.hpp"
 #include "pkgman/install.hpp"
 #include "pkgman/remove.hpp"
 #include "pkgman/startPkg.hpp"
-extern "C" {
-
-}
 
 int main(int argc, char *argv[]) {
 	signIn();
@@ -46,7 +44,8 @@ int main(int argc, char *argv[]) {
 	int historyIndex = 0;
 
 	while (true) {
-		std::string prompt = getUsername() + "@" + getPc() + "$ ";
+		std::string symbol = (getUsername() == "root") ? "#" : "$";
+		std::string prompt = getUsername() + "@" + getPc() + symbol + " ";
 		std::string input = readInputWithHistory(prompt, history, historyIndex);
 		std::istringstream iss(input);
 		std::string command;
@@ -65,6 +64,9 @@ int main(int argc, char *argv[]) {
 			rmUser();
 		else if (command == "passwd")
 			passwd();
+		else if (command == "logout") {
+    		logout();
+		}
 		else if (command == "cat") {
     		std::string filename;
     		iss >> filename;
@@ -94,7 +96,7 @@ int main(int argc, char *argv[]) {
 				help("pkg");
 		}
 		else if (command == "clear")
-			system("clear");
+			system("cls");
 		else if (command == "ls") {
     		std::string folder;
     		iss >> folder;

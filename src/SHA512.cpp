@@ -167,4 +167,3 @@ void SHA512::freeBuffer(uint64** buffer, size_t nBuffer){
 
 	delete[] buffer;
 }
-

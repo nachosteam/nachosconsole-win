@@ -14,6 +14,7 @@ void help(const std::string& place) {
             "clear                Clears the terminal window" << std::endl <<
             "ls [dir or file]     Shows files in the directory or a specific file (beta)" << std::endl <<
             "cat <file>           Shows contents of the file (beta)" << std::endl <<
+            "logout               Logs out of the account" << std::endl <<
             "exit                 Stops running NachosConsole" << std::endl;
     } 
     else if (place == "pkg") {

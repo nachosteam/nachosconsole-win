@@ -16,71 +16,97 @@
 #pragma once
 #include <iostream>
 #include <fstream>
+#include <conio.h>
+#include <filesystem>
 #include "toml.hpp"
 #include "SHA512.h"
 #include "sessionData.hpp"
 
-static void login () {
-	std::string usr;
-	std::cout << "\tLogin: ";
-	getline(std::cin, usr);
-	auto data = toml::parse("nc-bin/cfg.toml");
-	if (data.contains(usr)) {
-		std::string pass;
-		std::cout << "\tPassword: ";
-		getline(std::cin, pass);
-		if (toml::find<std::string>(data, usr, "pass_hash") == sha512.hash(pass)) {
-			mainInfo.currentUsr = usr;
-			std::cout << "Welcome, " << usr << "!" << std::endl;
-		}
-		else {
-			std::cout << "Incorrect password" << std::endl;
-			exit(1);
-		}
-	}
-	else {
-		std::cout << "This user does not exists" << std::endl;
-		exit(1);
-	}
-}
-static void reg () {
-	std::cout << "Creating user" << std::endl;
-	std::string usr;
-	std::cout << "\tLogin: ";
-	getline(std::cin, usr);
-	auto data = toml::parse("nc-bin/cfg.toml");
-	if (!data.contains(usr)) {
-		std::string pass;
-		std::cout << "\tPassword: ";
-		getline(std::cin, pass);
-		pass = sha512.hash(pass);
-		data[usr]["pass_hash"] = pass;
-		std::ofstream cfg;
-		cfg.open("nc-bin/cfg.toml");
-		cfg << data;
-		cfg.close();
-		mainInfo.currentUsr = usr;
-	}
-	else {
-		std::cout << "This user already exests!" <<std::endl;
-		exit(1);
-	}
+static std::string getHiddenPassword() {
+    std::string pass;
+    char ch;
+    while ((ch = _getch()) != '\r') {
+        if (ch == '\b') {
+            if (!pass.empty()) {
+                pass.pop_back();
+                std::cout << "\b \b";
+            }
+        } else {
+            pass.push_back(ch);
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+    return pass;
 }
 
 static void firstSettings() {
-	std::string root_pass;
-	std::cout << "\t|Enter root password: ";
-	getline(std::cin, root_pass);
-	auto data = toml::parse("nc-bin/cfg.toml");
-	data["root"]["pass_hash"] = sha512.hash(root_pass);
+    std::string root_pass;
+    std::cout << "\t|Enter root password: ";
+    root_pass = getHiddenPassword();
 
-	std::string pc_name;
-	std::cout << "\t|Enter pc name: ";
-	getline(std::cin, pc_name);
-	data["pc"] = pc_name;
+    auto data = toml::parse("nc-bin/cfg.toml");
+    data["root"]["pass_hash"] = sha512.hash(root_pass);
 
-	std::ofstream cfg;
-	cfg.open("nc-bin/cfg.toml");
+    std::string pc_name;
+    std::cout << "\t|Enter pc name: ";
+    getline(std::cin, pc_name);
+    data["pc"] = pc_name;
+
+    std::ofstream cfg("nc-bin/cfg.toml");
+    cfg << data;
+    cfg.close();
+}
+
+static void reg() {
+    auto data = toml::parse("nc-bin/cfg.toml");
+    while (true) {
+        std::cout << "Creating user" << std::endl;
+        std::string usr;
+        std::cout << "\tLogin: ";
+        getline(std::cin, usr);
+
+        if (data.contains(usr)) {
+            std::cout << "This user already exists! Try again." << std::endl;
+            continue;
+        }
+
+        std::cout << "\tPassword: ";
+        std::string pass = getHiddenPassword();
+
+        data[usr]["pass_hash"] = sha512.hash(pass);
+
+        std::ofstream cfg("nc-bin/cfg.toml");
         cfg << data;
         cfg.close();
+
+        mainInfo.currentUsr = usr;
+        std::cout << "User created successfully!" << std::endl;
+        break;
+    }
+}
+
+static void login() {
+    auto data = toml::parse("nc-bin/cfg.toml");
+    while (true) {
+        std::string usr;
+        std::cout << "\tLogin: ";
+        getline(std::cin, usr);
+
+        if (!data.contains(usr)) {
+            std::cout << "This user does not exist. Try again." << std::endl;
+            continue;
+        }
+
+        std::cout << "\tPassword: ";
+        std::string pass = getHiddenPassword();
+
+        if (toml::find<std::string>(data, usr, "pass_hash") == sha512.hash(pass)) {
+            mainInfo.currentUsr = usr;
+            std::cout << "Welcome, " << usr << "!" << std::endl;
+            break;
+        } else {
+            std::cout << "Incorrect password. Try again." << std::endl;
+        }
+    }
 }
