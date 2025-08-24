@@ -27,6 +27,8 @@
 #include "account.hpp"
 #include "helpCommand.hpp"
 #include "about.hpp"
+#include "ls.hpp"
+#include "cat.hpp"
 #include "pkgman/getArch.hpp"
 #include "pkgman/update.hpp"
 #include "pkgman/install.hpp"
@@ -63,6 +65,14 @@ int main(int argc, char *argv[]) {
 			rmUser();
 		else if (command == "passwd")
 			passwd();
+		else if (command == "cat") {
+    		std::string filename;
+    		iss >> filename;
+    		if (filename.empty())
+    		    std::cout << "Usage: cat <file>" << std::endl;
+    		else
+    		    cat(filename);
+		}
 		else if (command == "arch")
 			std::cout << getArch() << std::endl;
 		else if (command == "pkg") {
@@ -85,8 +95,14 @@ int main(int argc, char *argv[]) {
 		}
 		else if (command == "clear")
 			system("clear");
-		else if (command == "ls")
-			system("dir");
+		else if (command == "ls") {
+    		std::string folder;
+    		iss >> folder;
+    		if (folder.empty())
+    		    ls();
+    		else
+    		    ls(folder);
+		}
 		else if (command == "exit") {
 			disableRawMode();
                         exit(0);

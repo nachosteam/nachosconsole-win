@@ -3,9 +3,11 @@
 #include <vector>
 #include <string>
 #include <conio.h>
+#include <filesystem>
 
 std::string readInputWithHistory(const std::string& prompt, std::vector<std::string>& history, int& historyIndex) {
     std::string buffer;
+    size_t cursorPos = 0;
     std::cout << prompt << std::flush;
 
     while (true) {
@@ -20,19 +22,22 @@ std::string readInputWithHistory(const std::string& prompt, std::vector<std::str
             return buffer;
         }
         else if (ch == 8) {
-            if (!buffer.empty()) {
-                buffer.pop_back();
-                std::cout << "\b \b" << std::flush;
+            if (cursorPos > 0) {
+                buffer.erase(cursorPos - 1, 1);
+                cursorPos--;
+                std::cout << "\r" << prompt << buffer << " \b";
+                for (size_t i = buffer.size(); i > cursorPos; i--) std::cout << "\b";
+                std::cout << std::flush;
             }
         }
-        else if (ch == 0 || ch == 224) { 
+        else if (ch == 0 || ch == 224) {
             int code = _getch();
             if (code == 72) {
                 if (historyIndex > 0) {
                     historyIndex--;
                     buffer = history[historyIndex];
-                    std::cout << "\r" << std::string(200, ' ') << "\r"
-                              << prompt << buffer << std::flush;
+                    cursorPos = buffer.size();
+                    std::cout << "\r" << std::string(200, ' ') << "\r" << prompt << buffer << std::flush;
                 }
             }
             else if (code == 80) {
@@ -43,13 +48,31 @@ std::string readInputWithHistory(const std::string& prompt, std::vector<std::str
                     historyIndex = history.size();
                     buffer.clear();
                 }
-                std::cout << "\r" << std::string(200, ' ') << "\r"
-                          << prompt << buffer << std::flush;
+                cursorPos = buffer.size();
+                std::cout << "\r" << std::string(200, ' ') << "\r" << prompt << buffer << std::flush;
+            }
+            else if (code == 75) {
+                if (cursorPos > 0) {
+                    cursorPos--;
+                    std::cout << "\b" << std::flush;
+                }
+            }
+            else if (code == 77) {
+                if (cursorPos < buffer.size()) {
+                    std::cout << buffer[cursorPos];
+                    cursorPos++;
+                    std::cout << std::flush;
+                }
             }
         }
+        else if (ch == 9) {
+            continue;
+        }
         else {
-            buffer += (char)ch;
-            std::cout << (char)ch << std::flush;
+            buffer.insert(cursorPos, 1, (char)ch);
+            std::cout << buffer.substr(cursorPos) << std::flush;
+            cursorPos++;
+            for (size_t i = buffer.size(); i > cursorPos; i--) std::cout << "\b";
         }
     }
 }
